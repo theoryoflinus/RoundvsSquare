@@ -8,19 +8,29 @@ public class SpawnerFollowMouse : MonoBehaviour {
     //public Transform planetCenter;                // 중심 구체
     public GravitationalForce gravitationalForce;
     public Transform planetCenter;
+    public SpawnerCursor spawnerCursor;
 
     void Update() {
+
+
         // 마우스 월드 좌표
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 mouseDir = (mousePos - planetCenter.position).normalized;
+        Vector2 offset = mousePos - planetCenter.position;
 
-        // 대기권 경계 반지름 (PlanetVisual 스케일 2 적용)
-        float radius = gravitationalForce.gravityRadius * 2;
+        // 거리 체크: 너무 가까우면 회전 방향 판단 불가 → 무시
+        if (offset.magnitude < 0.01f) {
+            spawnerCursor.Hide();
+            return;
+        }
 
-        // 마우스가 대기권 내부에 있든 외부에 있든 상관없이
-        // 항상 행성 중심에서 대기권 경계 거리만큼 떨어진 위치에 스폰
-        Vector2 spawnPos = (Vector2)planetCenter.position + mouseDir * radius;
-        transform.position = new Vector3(spawnPos.x, spawnPos.y, 0); // z는 고정 
+        Vector2 dir = offset.normalized;
+        float radius = gravitationalForce.gravityRadius;
+
+        Vector2 spawnPos = (Vector2)planetCenter.position + dir * radius;
+        transform.position = new Vector3(spawnPos.x, spawnPos.y, 0);
+
+
+        spawnerCursor.UpdatePosition(spawnPos);
     }
 
 }
